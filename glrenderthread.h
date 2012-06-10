@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QGLWidget>
+#include <QFileSystemWatcher>
 
 class QGLFrame;
 class QSize;
@@ -17,7 +18,7 @@ public:
     void resizeViewport(const QSize &size);
     void run(void);
     void stop(void);
-    void LoadShader(QString vshader, QString fshader);
+    void LoadShader();
 
 protected:
     void GLInit(void);
@@ -25,7 +26,7 @@ protected:
     void paintGL(void);
 
 private:
-    bool doRendering, doResize;
+    bool doRendering, doResize, doReloadShader;
     int w, h, FrameCounter;
 
     QGLFrame *GLFrame;
@@ -33,9 +34,13 @@ private:
     QGLShaderProgram *ShaderProgram;
     QGLShader *VertexShader, *FragmentShader;
 
+    QString vshader, fshader;
+    QFileSystemWatcher *watcher;
+
 signals:
 
 public slots:
+    void reloadShader();
 
 };
 

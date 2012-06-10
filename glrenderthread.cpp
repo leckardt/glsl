@@ -12,10 +12,16 @@ QGLRenderThread::QGLRenderThread(QGLFrame *parent) :
 {
     doRendering = true;
     doResize = false;
+    doReloadShader = true;
     FrameCounter=0;
 
     ShaderProgram = NULL;
     VertexShader = FragmentShader = NULL;
+
+    vshader = "./Basic.vsh";
+    fshader = "./Basic.fsh";
+    watcher = new QFileSystemWatcher();
+    connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(reloadShader()));
 }
 
 void QGLRenderThread::resizeViewport(const QSize &size)
@@ -35,7 +41,6 @@ void QGLRenderThread::run()
 {
     GLFrame->makeCurrent();
     GLInit();
-    LoadShader("./Basic.vsh", "./Basic.fsh");
 
     while (doRendering)
         {
@@ -44,6 +49,11 @@ void QGLRenderThread::run()
             GLResize(w, h);
             doResize = false;
             }
+	if (doReloadShader)
+	{
+    		LoadShader();
+		doReloadShader = false;
+	}
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
@@ -83,7 +93,7 @@ void QGLRenderThread::paintGL(void)
 //    glRotatef(FrameCounter,0.0f,0.0f,0.5f);     // rotate z-axis
     glBegin(GL_QUADS);
         glColor3f(1.,0.,0.);
-        glVertex3f(-1.0, -1.0,0.0);
+	glVertex3f(-1.0, -1.0,0.0);
         glVertex3f(1.0, -1.0,0.0);
         glVertex3f(1.0, 1.0,0.0);
         glVertex3f(-1.0, 1.0,0.0);
@@ -91,12 +101,14 @@ void QGLRenderThread::paintGL(void)
 }
 
 
-void QGLRenderThread::LoadShader(QString vshader, QString fshader)
+void QGLRenderThread::LoadShader()
 {
     if(ShaderProgram)
         {
         ShaderProgram->release();
-        ShaderProgram->removeAllShaders();
+        //ShaderProgram->removeAllShaders();
+	delete ShaderProgram;
+	ShaderProgram = new QGLShaderProgram;
         }
     else ShaderProgram = new QGLShaderProgram;
 
@@ -140,4 +152,19 @@ void QGLRenderThread::LoadShader(QString vshader, QString fshader)
         qWarning() << "Shader Program Linker Error" << ShaderProgram->log();
         }
     else ShaderProgram->bind();
+
+    //clear watched files
+    watcher->removePaths(watcher->files());
+    //watch shader files
+    watcher->addPath(vshader);
+    watcher->addPath(fshader);
+}
+
+void QGLRenderThread::reloadShader()
+{
+	QFile* vshFile = new QFile(vshader);
+	QFile* fshFile = new QFile(fshader);
+	while ( !vshFile->exists() || !fshFile->exists() )
+		;
+	doReloadShader = true;
 }
