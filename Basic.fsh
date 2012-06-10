@@ -8,7 +8,7 @@ float f(vec3 p)
 {
 //	vec3 bla = mod(p,500);
 	float sphere =  distance(p,vec3(150+100*sin(frameCounter*0.01),150+100*cos(frameCounter*0.008),-80))-100;
-	float sky = distance(p,vec3(0)) -100;
+	float sky = distance(p,vec3(0)) -1000;
 	sky = 10000000;
 	float d;
 	d = min(sphere,sky);
@@ -24,7 +24,7 @@ vec4 march(vec3 p, vec3 dir)
 	for(int i=0; i<6;i++)
 	{
 		d = f(p);
-		if(d>0.91||d<-0.91)
+		if(d>0.5||d<-0.5)
 		{
 			p = p + d*dir*1;
 		}
@@ -38,7 +38,7 @@ vec4 march(vec3 p, vec3 dir)
 			float e = 0.001;
 			vec3 n = vec3(f(p + vec3(e, 0, 0)) - f(p - vec3(e, 0, 0)), f(p + vec3(0, e, 0)) - f(p - vec3(0, e, 0)), f(p + vec3(0, 0, e)) - f(p - vec3(0, 0, e)));
 			n = normalize(n);
-			float c = dot(n,-dir);
+			float c = dot(n,normalize(vec3(1,1,1)));
 			return vec4(c,c,c,1);
 //			return vec4(1);
 		}
