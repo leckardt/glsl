@@ -53,6 +53,7 @@ void QGLRenderThread::run()
 	{
     		LoadShader();
 		doReloadShader = false;
+		FrameCounter = 0;
 	}
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -89,6 +90,10 @@ void QGLRenderThread::GLResize(int width, int height)
 
 void QGLRenderThread::paintGL(void)
 {
+    ShaderProgram->setUniformValue( "frameCounter", FrameCounter );
+    ShaderProgram->setUniformValue( "width", w );
+    ShaderProgram->setUniformValue( "height", h );
+
     glTranslatef(0.0f, 0.0f, -1.0f);            // move 5 units into the screen
 //    glRotatef(FrameCounter,0.0f,0.0f,0.5f);     // rotate z-axis
     glBegin(GL_QUADS);
